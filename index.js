@@ -40,14 +40,29 @@ app.post("/upload", async (req, res) => {
         // Extract text from cropped image
         let extractedText = croppedFilePath ? await extractText(croppedFilePath) : null;
 
-        res.json({
+        // Prepare output data
+        const outputData = {
             message: "Image uploaded, cropped & text extracted successfully",
             originalFilename,
             croppedFilename: croppedFilePath ? path.basename(croppedFilePath) : null,
             extractedText,
             website,
             links,
+        };
+
+        // Save output to a text file
+        const outputFilePath = path.join(__dirname, "output", `output_${Date.now()}.txt`);
+        const outputContent = `Website: ${website}\nLinks: ${JSON.stringify(links, null, 2)}\nExtracted Text:\n${extractedText}`;
+
+        fs.writeFile(outputFilePath, outputContent, "utf8", (err) => {
+            if (err) {
+                console.error("❌ Failed to save output file", err);
+            } else {
+                console.log(`📄 Output saved: ${outputFilePath}`);
+            }
         });
+
+        res.json(outputData);
     });
 });
 
